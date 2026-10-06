@@ -1,0 +1,64 @@
+:root {
+    --band-blue: #aeb3c2;
+    --band-lilac: #ddd0e1;
+    --band-booking: #CDBCCC;
+    --btn-pink: #b0849a;
+    --btn-slate: #77779a;
+}
+
+.page-title {
+    padding: 3rem var(--page-pad) 2.5rem;
+    text-align: center;
+}
+.page-title h1 {
+    font-size: clamp(2.2rem, 5.5vw, 4rem);
+    font-weight: 400;
+    letter-spacing: .18em;
+    margin-bottom: 1.2rem;
+}
+.page-title p {
+    max-width: 38rem;
+    margin: 0 auto;
+    color: var(--plum-soft);
+    font-size: 1rem;
+}
+
+.service-band {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 3rem;
+    padding: 2.5rem var(--page-pad);
+    margin-top: .8rem;
+}
+.service-band.blue  { background: var(--band-blue); }
+.service-band.lilac { background: var(--band-lilac); }
+
+.service-text { text-align: center; max-width: 30rem; margin: 0 auto; }
+.service-text h2 { font-size: clamp(1.4rem, 2.5vw, 1.9rem); margin-bottom: 1rem; }
+.service-text p  { margin: 0 0 1.4rem; font-size: .85rem; }
+
+.service-photo {
+    width: 100%;
+    max-width: 440px;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    justify-self: center;
+    background: var(--mauve-deep);
+}
+
+.service-band.reverse .service-photo { order: -1; aspect-ratio: 3 / 4; max-width: 330px; }
+
+.btn-pink  { background: var(--btn-pink);  font-size: .75rem; padding: .55rem 1.4rem; }
+.btn-slate { background: var(--btn-slate); font-size: .75rem; padding: .55rem 1.6rem; }
+.btn-pink:hover,
+.btn-slate:hover { background: var(--plum); }
+
+.booking-details {
+    margin-top: .8rem;
+    padding: 2.5rem var(--page-pad);
+    background: var(--band-booking);
+    text-align: center;
+}
+.booking-details h2 { font-size: 1.5rem; margin-bottom: .8rem; }
+.booking-details p  { max-width: 46rem; margin: 0 auto 1.4rem; font-size: .95rem; }
