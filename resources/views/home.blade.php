@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/chatbot.css') }}">
 </head>
 <body>
 
@@ -40,11 +41,11 @@
         <section class="capture">
             <h2>What We Capture</h2>
             <div class="card-grid">
-                <a class="card" v-for="s in services" :key="s.title" :href="s.link">
+                <article class="card" v-for="s in services" :key="s.title">
                     <span class="card-icon" aria-hidden="true">{{ s.icon }}</span>
                     <h3>{{ s.title }}</h3>
                     <p>{{ s.text }}</p>
-                </a>
+                </article>
             </div>
         </section>
 
@@ -66,10 +67,8 @@
                     <a href="/about" class="btn">Read My Story</a>
                 </div>
             </div>
-        </section>
 
-        <section class="behind-lens">
-            <img src="/images/photographer.jpg" alt="Ashan editing photos at his desk">
+            <img class="story-photo" src="/images/photographer.jpg" alt="Ashan editing photos at his desk">
         </section>
 
         <section class="reviews">
@@ -125,8 +124,10 @@
 </div>
 @endverbatim
 
+
 <script src="https://unpkg.com/vue@3.4.38/dist/vue.global.prod.js"></script>
 <script src="{{ asset('js/app.js') }}"></script>
+<script src="{{ asset('js/chatbot.js') }}"></script>
 </body>
 </html>
 
