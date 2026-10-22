@@ -146,9 +146,15 @@ a.card:hover {
 .story h2 { text-align: left; margin-bottom: .8rem; }
 .story p { margin: 0 0 1.4rem; max-width: 40rem; }
 
-
-.behind-lens img { width: 100%; max-height: 640px; object-fit: cover; background: var(--plum-soft); }
-
+.story-photo {
+    display: block;
+    width: 100%;
+    max-width: 1000px;
+    height: auto;            
+    margin: 2.5rem auto 0;
+    border-radius: var(--radius);
+    box-shadow: 0 6px 24px rgba(74, 58, 79, .3);
+}
 
 .reviews { padding: 3.5rem var(--page-pad); }
 .reviews-sub { text-align: center; margin: .5rem 0 2rem; color: var(--plum-soft); font-size: .9rem; }
