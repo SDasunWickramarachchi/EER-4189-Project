@@ -7,12 +7,12 @@ createApp({
             years: 10,
 
             navLinks: [
-                { label: "Home",      href: "/" },
+                { label: "Home", href: "/" },
                 { label: "Portfolio", href: "/portfolio" },
-                { label: "Services",  href: "/services" },
-                { label: "Packages",  href: "/packages" },
-                { label: "About",     href: "/about" },
-                { label: "Contact",   href: "/contact" },
+                { label: "Services", href: "/services" },
+                { label: "Packages", href: "/packages" },
+                { label: "About", href: "/about" },
+                { label: "Contact", href: "/contact" },
             ],
 
             services: [
