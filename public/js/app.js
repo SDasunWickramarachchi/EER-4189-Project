@@ -18,16 +18,16 @@ createApp({
             services: [
                 { icon: "\u2665", title: "Weddings & Couples",
                   text: "Natural, timeless coverage of your big day, from preparation to the last dance.",
-                  link: "/portfolio" },
+                  link: "/services" },
                 { icon: "\u273F", title: "Maternity & Newborn",
                   text: "Gentle sessions that celebrate pregnancy and the first days of a new life.",
-                  link: "/portfolio" },
+                  link: "/services" },
                 { icon: "\u263A", title: "Portraits & Lifestyle",
                   text: "Relaxed portraits for individuals, families, and professionals.",
-                  link: "/portfolio" },
+                  link: "/services" },
                 { icon: "\u2726", title: "Events & Invitations",
                   text: "Birthdays, celebrations, and corporate events captured as they unfold.",
-                  link: "/portfolio"},
+                  link: "/services"},
             ],
 
             gallery: [

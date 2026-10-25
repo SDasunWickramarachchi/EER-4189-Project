@@ -1,32 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ashan Rumaiz Photography | Home</title>
+@extends('layouts.app')
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/chatbot.css') }}">
-</head>
-<body>
+@section('title', 'Home')
 
+@section('content')
 @verbatim
 <div id="app">
-
-    <header class="site-header">
-        <a href="/" class="logo">
-            <img src="/images/logo.png" alt="Ashan Rumaiz Photography">
-        </a>
-
-        <nav class="main-nav">
-            <a v-for="link in navLinks" :key="link.label" :href="link.href"
-               :class="{ active: link.label === 'Home' }">{{ link.label }}</a>
-            <a href="/booking" class="btn btn-small">Book Now</a>
-        </nav>
-    </header>
 
     <main>
         <section class="hero">
@@ -41,11 +19,11 @@
         <section class="capture">
             <h2>What We Capture</h2>
             <div class="card-grid">
-                <article class="card" v-for="s in services" :key="s.title">
+                <a class="card" v-for="s in services" :key="s.title" :href="s.link">
                     <span class="card-icon" aria-hidden="true">{{ s.icon }}</span>
                     <h3>{{ s.title }}</h3>
                     <p>{{ s.text }}</p>
-                </article>
+                </a>
             </div>
         </section>
 
@@ -62,8 +40,8 @@
                 <div>
                     <h2>years of telling real stories, honestly!!!</h2>
                     <p>Ashan Rumaiz Photography has spent the last decade capturing weddings,
-                       milestone events, newborns, and family portraits across Sri Lanka:
-                       candid, warm, and true to the moment as it happened.</p>
+                       milestone events, newborns, and family portraits across Sri Lanka.
+                       Every frame is about the moment as it happened.</p>
                     <a href="/about" class="btn">Read My Story</a>
                 </div>
             </div>
@@ -84,35 +62,6 @@
         </section>
     </main>
 
-    <footer class="site-footer">
-        <div class="footer-brand">
-            <a href="/" class="logo">
-                <img src="/images/logo.png" alt="Ashan Rumaiz Photography">
-            </a>
-        </div>
-
-        <div class="footer-about">
-            <h4>Ashan Rumaiz Photography</h4>
-            <p>Wedding, event, portrait and lifestyle photography from a home studio,
-               with a decade of experience behind every shoot.</p>
-        </div>
-
-        <div class="footer-links">
-            <h4>Explore</h4>
-            <a href="/portfolio">Portfolio</a>
-            <a href="/services">Services</a>
-            <a href="/packages">Packages</a>
-            <a href="/about">About Us</a>
-        </div>
-
-        <div class="footer-contact">
-            <h4>Contact</h4>
-            <p>+94 77 123 4567</p>
-            <p>info@ashanrumaiz.lk</p>
-            <p>Colombo, Sri Lanka</p>
-        </div>
-    </footer>
-
     <div class="lightbox" v-if="lightbox !== null" @click.self="closeLightbox"
          role="dialog" aria-modal="true">
         <button class="lb-close" @click="closeLightbox" aria-label="Close">&times;</button>
@@ -124,12 +73,10 @@
 </div>
 @endverbatim
 
+@endsection
 
-<script src="https://unpkg.com/vue@3.4.38/dist/vue.global.prod.js"></script>
+@push('scripts')
 <script src="{{ asset('js/app.js') }}"></script>
-<script src="{{ asset('js/chatbot.js') }}"></script>
-</body>
-</html>
-
+@endpush
 
 
