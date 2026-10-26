@@ -25,7 +25,10 @@
 
 @include('partials.chatbot')
 
+
 <script src="https://unpkg.com/vue@3.4.38/dist/vue.global.prod.js"></script>
+
+@vite('resources/js/app.js')
 
 @stack('scripts')
 
