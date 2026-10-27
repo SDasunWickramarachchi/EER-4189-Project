@@ -15,3 +15,11 @@ Route::get('/booking', function () {
     return view('booking');
 });
 
+//admin pages
+Route::get('/admin/login', function () {
+    return view('admin.login');
+});
+
+Route::get('/admin/forgot-password', function () {
+    return view('admin.forgot-password');
+});
