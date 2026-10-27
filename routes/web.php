@@ -13,6 +13,10 @@ Route::get('/services', function () {
     return view('services');
 });
 
+Route::get('/admin', function () {
+    return redirect('/admin/booking');
+});
+
 Route::get('/admin/services', function () {
     return view('admin.services');
 });
