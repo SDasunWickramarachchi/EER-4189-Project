@@ -10,7 +10,105 @@ use Illuminate\Support\Facades\Validator;
 class BookingController extends Controller
 {
     /**
+     * =========================================================================
+     * [FEATURE 1 - ALLOCATED TO TEAMMATE]: Availability Engine & Busy Dates
+     * =========================================================================
+     *
+     * Check date and slot availability for a prospective session.
+     * GET /api/bookings/availability?date=YYYY-MM-DD
+     */
+    public function checkAvailability(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'date' => 'required|date',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        try {
+            $requestedDate = $request->query('date');
+
+            // Find existing confirmed or pending bookings on that date
+            $existingBookings = Booking::where('session_date', $requestedDate)
+                ->whereIn('status', ['confirmed', 'pending', 'awaiting_retainer'])
+                ->get();
+
+            $isBooked = $existingBookings->count() >= 2; // Studio max 2 sessions per day threshold
+            $slotsAvailable = [
+                [
+                    'slot' => 'Morning (09:00 AM - 01:00 PM)',
+                    'available' => !$existingBookings->contains(function ($b) {
+                        return str_contains(strtolower($b->start_time ?? ''), '09:') || str_contains(strtolower($b->start_time ?? ''), '10:');
+                    })
+                ],
+                [
+                    'slot' => 'Golden Hour / Evening (02:30 PM - 06:30 PM)',
+                    'available' => !$existingBookings->contains(function ($b) {
+                        return str_contains(strtolower($b->start_time ?? ''), '01:') || str_contains(strtolower($b->start_time ?? ''), '02:') || str_contains(strtolower($b->start_time ?? ''), '03:');
+                    })
+                ]
+            ];
+
+            return response()->json([
+                'status' => 'success',
+                'date' => $requestedDate,
+                'available' => !$isBooked,
+                'booking_count' => $existingBookings->count(),
+                'slots' => $slotsAvailable,
+                'message' => $isBooked
+                    ? 'This date is already fully booked. Please choose an alternate date.'
+                    : 'Date is available for reservation.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to check availability: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get list of unavailable / booked dates for calendar disabling.
+     * GET /api/bookings/busy-dates?month=YYYY-MM
+     */
+    public function getBusyDates(Request $request): JsonResponse
+    {
+        try {
+            $month = $request->query('month', date('Y-m'));
+
+            $bookings = Booking::where('session_date', 'like', "{$month}%")
+                ->whereIn('status', ['confirmed', 'awaiting_retainer'])
+                ->get();
+
+            // Group dates with 2 or more shoots as fully booked
+            $dateCounts = $bookings->groupBy('session_date')->map->count();
+            $busyDates = $dateCounts->filter(fn($count) => $count >= 2)->keys()->values();
+
+            return response()->json([
+                'status' => 'success',
+                'month' => $month,
+                'busy_dates' => $busyDates,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch busy dates: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * =========================================================================
+     * [FEATURE 2 - ALLOCATED TO LEAD]: Booking Submission, Pending Workflow & Confirmation
+     * =========================================================================
+     *
      * Submit a new booking request from Customer View.
+     * Always enforced as 'pending' with studio SLA, reference code, and confirmation payload.
      * POST /api/bookings
      */
     public function storeCustomerBooking(Request $request): JsonResponse
@@ -22,35 +120,71 @@ class BookingController extends Controller
             'session_date' => 'required|date',
             'session_type' => 'required|string|max:255',
             'location' => 'required|string|max:255',
-            'notes' => 'nullable|string',
+            'start_time' => 'nullable|string|max:50',
+            'end_time' => 'nullable|string|max:50',
+            'notes' => 'nullable|string|max:2000',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'status' => 'error',
                 'errors' => $validator->errors(),
+                'message' => 'Please correct the highlighted fields.'
             ], 422);
         }
 
         try {
+            // Strictly enforce status as 'pending' for customer submissions
             $booking = Booking::create([
-                'client_name' => $request->client_name,
-                'client_phone' => $request->client_phone,
-                'client_email' => $request->client_email,
+                'client_name' => trim($request->client_name),
+                'client_phone' => trim($request->client_phone),
+                'client_email' => trim($request->client_email),
                 'session_date' => $request->session_date,
                 'start_time' => $request->input('start_time', '10:00 AM'),
                 'end_time' => $request->input('end_time', '05:00 PM'),
                 'session_type' => $request->session_type,
-                'location' => $request->location,
+                'location' => trim($request->location),
                 'status' => 'pending',
                 'lead_photographer' => 'Ashan Rumaiz (Principal)',
-                'notes' => $request->notes,
+                'notes' => $request->input('notes'),
             ]);
+
+            // Construct rich confirmation packet for the client
+            $confirmation = [
+                'reference_number' => $booking->reference_number,
+                'status' => 'pending',
+                'status_label' => 'Pending Studio Review',
+                'client_name' => $booking->client_name,
+                'client_email' => $booking->client_email,
+                'client_phone' => $booking->client_phone,
+                'session_date' => $booking->session_date,
+                'start_time' => $booking->start_time,
+                'end_time' => $booking->end_time,
+                'session_type' => $booking->session_type,
+                'location' => $booking->location,
+                'lead_photographer' => $booking->lead_photographer,
+                'notes' => $booking->notes,
+                'review_timeframe' => 'Within 24 Hours',
+                'submitted_at' => now()->toIso8601String(),
+                'next_steps' => [
+                    'Step 1: Calendar Reservation — Your requested shoot date is logged in our studio queue.',
+                    'Step 2: Studio Verification — Ashan Rumaiz reviews the session schedule, timing, and venue logistics within 24 hours.',
+                    'Step 3: Formal Confirmation & Retainer — You will receive an official approval email with the 50% retainer invoice and contract to lock the date.',
+                    'Step 4: Creative Consultation — 1 week prior to the session, we conduct a pre-shoot consultation for wardrobe and shot list planning.'
+                ],
+                'studio_support' => [
+                    'contact_person' => 'Ashan Rumaiz (Principal Photographer)',
+                    'phone' => '+94 77 444 8255',
+                    'email' => 'ashanrumaiz@gmail.com',
+                    'studio_address' => 'No.07/20, Rainbow Village, Mahahunupitiya, Negombo, Sri Lanka'
+                ]
+            ];
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Thank you! Your booking request has been submitted successfully. We will be in touch shortly.',
+                'message' => 'Thank you! Your booking request has been submitted successfully and is now Pending Review.',
                 'data' => $booking,
+                'confirmation' => $confirmation,
             ], 201);
         } catch (\Exception $e) {
             return response()->json([

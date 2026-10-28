@@ -50,6 +50,24 @@ class Booking extends BaseModel
     }
 
     /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['reference_number'];
+
+    /**
+     * Get unique booking reference code.
+     */
+    public function getReferenceNumberAttribute(): string
+    {
+        $idStr = (string) ($this->_id ?? $this->id ?? '0');
+        $code = is_numeric($idStr) && intval($idStr) > 0 ? sprintf('%04d', $idStr) : strtoupper(substr(md5($idStr . $this->client_email), 0, 5));
+        $year = date('Y', strtotime($this->session_date ?? 'now'));
+        return "ARP-{$year}-{$code}";
+    }
+
+    /**
      * Scope a query to filter by status.
      */
     public function scopeStatus($query, $status)

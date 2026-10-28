@@ -34,7 +34,19 @@ Route::prefix('api')->group(function () {
     // Services Endpoints
     Route::get('/services', [ServiceController::class, 'publicIndex']);
 
-    // Customer Booking Submission Endpoint
+    // =========================================================================
+    // 👩‍💻 [TEAMMATE AREA - FEATURE 1]: Availability Engine & Busy Dates
+    // Assigned to: Teammate
+    // Scope: Check availability for date/slots and fetch booked calendar dates
+    // =========================================================================
+    Route::get('/bookings/availability', [BookingController::class, 'checkAvailability']);
+    Route::get('/bookings/busy-dates', [BookingController::class, 'getBusyDates']);
+
+    // =========================================================================
+    // 👨‍💻 [LEAD AREA - FEATURE 2]: Booking Submission, Pending Workflow & Confirmation
+    // Assigned to: Lead (You)
+    // Scope: Customer booking submission, 'pending' status enforcement, reference number
+    // =========================================================================
     Route::post('/bookings', [BookingController::class, 'storeCustomerBooking']);
 
     // Admin Management Endpoints
