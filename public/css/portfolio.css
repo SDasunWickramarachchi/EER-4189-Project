@@ -1,0 +1,98 @@
+:root {
+    --band-newborn: #cdbccc;
+    --band-events: #99a0ad;
+    --band-maternity: #e8d6e0;
+}
+
+.portfolio-hero {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    margin: 1.2rem;
+    padding: 3rem 2rem;
+    background-color: #2a0f0a;          
+    background-size: cover;
+    background-position: center 20%;
+    aspect-ratio: 5/2;
+    color: var(--white);
+    text-align: center;
+    overflow: hidden;
+}
+
+.portfolio-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, .15);
+}
+.portfolio-hero > * { position: relative; }
+
+.portfolio-hero h1 {
+    max-width: 48rem;
+    font-size: clamp(2.4rem, 5.5vw, 4.4rem);
+    font-weight: 400;
+    line-height: 1.1;
+}
+.portfolio-hero p {
+    max-width: 44rem;
+    margin-top: 1.6rem;
+    font-family: var(--font-display);
+    font-size: clamp(1rem, 1.6vw, 1.25rem);
+    line-height: 1.35;
+}
+
+.collection {
+    display: flex;
+    align-items: stretch;
+    gap: .5rem;
+    height: 36rem;
+    margin-top: .9rem;
+    overflow: hidden;
+    scroll-margin-top: 5rem;            
+}
+.collection-newborn   { background: var(--band-newborn); }
+.collection-events    { background: var(--band-events);    margin-inline: 1.2rem; }
+.collection-maternity { background: var(--band-maternity); margin-inline: 1.2rem; }
+
+.collection-text {
+    flex: 1.15 1 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    padding: 2rem 2.2rem;
+    color: #1a1a1a;
+    text-align: center;
+}
+.collection-text h2 {
+    margin-bottom: 1.6rem;
+    font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+    font-weight: 400;
+}
+.collection-text p {
+    font-family: var(--font-display);
+    font-size: clamp(.95rem, 1.2vw, 1.1rem);
+    line-height: 1.55;
+}
+
+
+.col {
+    flex: 1.5 1 0;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    min-width: 0;
+}
+.col.stack     { flex: .7 1 0; }        
+.col.stack.two { flex: 1.05 1 0; }      
+
+.col img {
+    display: block;
+    flex: 1 1 0;
+    width: 100%;
+    min-height: 0;                      
+    object-fit: cover;
+}

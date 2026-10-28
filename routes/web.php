@@ -15,6 +15,10 @@ Route::get('/booking', function () {
     return view('booking');
 });
 
+Route::get('/portfolio', function () {
+    return view('portfolio');
+});
+
 //admin pages
 Route::get('/admin/login', function () {
     return view('admin.login');
