@@ -71,6 +71,16 @@
                         <input id="session_date" type="date" v-model="form.session_date" :min="today">
                         <span class="field-error" v-if="errors.session_date">{{ errors.session_date }}</span>
                     </div>
+                    <p class="field-note" v-if="checking">Checking availability...</p>
+                    <p class="field-note" v-else-if="availabilityMessage">{{ availabilityMessage }}</p>
+                    <div class="field" v-if="slots.length">
+                        <span class="slot-title">Session Slot</span>
+                        <label class="slot-option" v-for="s in slots" :key="s.slot">
+                            <input type="radio" name="slot" :value="s.slot" v-model="form.slot" :disabled="!s.available">
+                            {{ s.slot }} <em v-if="!s.available">(booked)</em>
+                        </label>
+                        <span class="field-error" v-if="errors.slot">{{ errors.slot }}</span>
+                    </div>
 
                     <div class="field">
                         <label for="session_type">Session Type</label>
@@ -103,12 +113,14 @@
             <span class="modal-icon" aria-hidden="true">&#10003;</span>
             <h3 id="thanks-title">Request Sent!</h3>
             <p>Thank you, {{ sentName }}. Your booking request has been received. We will be in touch soon to confirm the details and hold your date.</p>
+            <p v-if="reference">Your reference number: <strong>{{ reference }}</strong></p>
             <button class="btn btn-request" @click="showThanks = false">Close</button>
         </div>
     </div>
 
 </div>
 @endverbatim
+
 @endsection
 
 @push('scripts')

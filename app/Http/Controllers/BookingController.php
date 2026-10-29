@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Carbon;
 use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -9,6 +10,39 @@ use Illuminate\Support\Facades\Validator;
 
 class BookingController extends Controller
 {
+    private const SLOTS = [
+        ['label' => 'Morning (09:00 AM - 01:00 PM)',               'start' => 540, 'end' => 780,  'start_time' => '09:00 AM', 'end_time' => '01:00 PM'],
+        ['label' => 'Golden Hour / Evening (02:30 PM - 06:30 PM)', 'start' => 870, 'end' => 1110, 'start_time' => '02:30 PM', 'end_time' => '06:30 PM'],
+    ];
+
+    private function toMinutes($time, int $fallback): int
+    {
+        if (!$time) return $fallback;
+        try {
+            $t = Carbon::parse($time);
+            return $t->hour * 60 + $t->minute;
+        } catch (\Exception $e) {
+            return $fallback;
+        }
+    }
+
+    private function slotsFor($bookings): array
+    {
+        return array_map(function ($slot) use ($bookings) {
+            $taken = $bookings->contains(function ($b) use ($slot) {
+                $start = $this->toMinutes($b->start_time, 0);
+                $end   = $this->toMinutes($b->end_time, 1440);
+                if ($end <= $start) { $start = 0; $end = 1440; }   // bad data = whole day
+                return $start < $slot['end'] && $end > $slot['start'];
+            });
+            return [
+                'slot'       => $slot['label'],
+                'available'  => !$taken,
+                'start_time' => $slot['start_time'],
+                'end_time'   => $slot['end_time'],
+            ];
+        }, self::SLOTS);
+    }
     /**
      * =========================================================================
      * [FEATURE 1 - ALLOCATED TO TEAMMATE]: Availability Engine & Busy Dates
@@ -17,10 +51,10 @@ class BookingController extends Controller
      * Check date and slot availability for a prospective session.
      * GET /api/bookings/availability?date=YYYY-MM-DD
      */
-    public function checkAvailability(Request $request): JsonResponse
+        public function checkAvailability(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'date' => 'required|date',
+            'date' => 'required|date|after_or_equal:today',
         ]);
 
         if ($validator->fails()) {
@@ -33,70 +67,71 @@ class BookingController extends Controller
         try {
             $requestedDate = $request->query('date');
 
-            // Find existing confirmed or pending bookings on that date
-            $existingBookings = Booking::where('session_date', $requestedDate)
+            $existing = Booking::whereDate('session_date', $requestedDate)
                 ->whereIn('status', ['confirmed', 'pending', 'awaiting_retainer'])
                 ->get();
 
-            $isBooked = $existingBookings->count() >= 2; // Studio max 2 sessions per day threshold
-            $slotsAvailable = [
-                [
-                    'slot' => 'Morning (09:00 AM - 01:00 PM)',
-                    'available' => !$existingBookings->contains(function ($b) {
-                        return str_contains(strtolower($b->start_time ?? ''), '09:') || str_contains(strtolower($b->start_time ?? ''), '10:');
-                    })
-                ],
-                [
-                    'slot' => 'Golden Hour / Evening (02:30 PM - 06:30 PM)',
-                    'available' => !$existingBookings->contains(function ($b) {
-                        return str_contains(strtolower($b->start_time ?? ''), '01:') || str_contains(strtolower($b->start_time ?? ''), '02:') || str_contains(strtolower($b->start_time ?? ''), '03:');
-                    })
-                ]
-            ];
+            $slots = $this->slotsFor($existing);
+            $free  = collect($slots)->where('available', true)->count();
+
+            if ($free === 0) {
+                $message = 'This date is fully booked. Please choose another date, or submit your request for manual review.';
+            } elseif ($free < count($slots)) {
+                $message = 'This date is partly booked. Please choose one of the free sessions below.';
+            } else {
+                $message = 'Date is available for reservation.';
+            }
 
             return response()->json([
-                'status' => 'success',
-                'date' => $requestedDate,
-                'available' => !$isBooked,
-                'booking_count' => $existingBookings->count(),
-                'slots' => $slotsAvailable,
-                'message' => $isBooked
-                    ? 'This date is already fully booked. Please choose an alternate date.'
-                    : 'Date is available for reservation.'
+                'status'        => 'success',
+                'date'          => $requestedDate,
+                'available'     => $free > 0,
+                'booking_count' => $existing->count(),
+                'slots'         => $slots,
+                'message'       => $message,
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => 'error',
+                'status'  => 'error',
                 'message' => 'Failed to check availability: ' . $e->getMessage(),
             ], 500);
         }
-    }
-
+}
     /**
      * Get list of unavailable / booked dates for calendar disabling.
      * GET /api/bookings/busy-dates?month=YYYY-MM
      */
     public function getBusyDates(Request $request): JsonResponse
     {
-        try {
-            $month = $request->query('month', date('Y-m'));
+        $month = $request->query('month', date('Y-m'));
 
+        if (!preg_match('/^\d{4}-\d{2}$/', $month)) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Month must look like 2026-12.',
+            ], 422);
+        }
+
+        try {
+            // Only firm bookings block the calendar; a pending request may still be rejected
             $bookings = Booking::where('session_date', 'like', "{$month}%")
                 ->whereIn('status', ['confirmed', 'awaiting_retainer'])
                 ->get();
 
-            // Group dates with 2 or more shoots as fully booked
-            $dateCounts = $bookings->groupBy('session_date')->map->count();
-            $busyDates = $dateCounts->filter(fn($count) => $count >= 2)->keys()->values();
+            $busyDates = $bookings
+                ->groupBy(fn($b) => Carbon::parse($b->session_date)->toDateString())
+                ->filter(fn($day) => collect($this->slotsFor($day))->where('available', true)->isEmpty())
+                ->keys()
+                ->values();
 
             return response()->json([
-                'status' => 'success',
-                'month' => $month,
+                'status'     => 'success',
+                'month'      => $month,
                 'busy_dates' => $busyDates,
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => 'error',
+                'status'  => 'error',
                 'message' => 'Failed to fetch busy dates: ' . $e->getMessage(),
             ], 500);
         }

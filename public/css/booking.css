@@ -126,5 +126,46 @@
 .modal h3 { font-size: 1.5rem; margin-bottom: .7rem; }
 .modal p { margin: 0 0 1.4rem; font-size: .9rem; color: var(--plum-soft); }
 
+.field-note {
+    margin: -.4rem 0 1rem;
+    font-size: .8rem;
+    color: var(--plum-soft);
+}
 
+.slot-title {
+    display: block;
+    margin-bottom: .4rem;
+    font-size: .7rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--plum);
+}
 
+.field .slot-option {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    margin: .4rem 0;
+    font-size: .9rem;
+    letter-spacing: normal;
+    text-transform: none;
+    cursor: pointer;
+}
+
+.field .slot-option input[type="radio"] {
+    width: auto;
+    padding: 0;
+    border: 0;
+    accent-color: var(--dusty);
+}
+
+.field .slot-option:has(input:disabled) {
+    opacity: .55;
+    cursor: not-allowed;
+}
+
+.slot-option em {
+    font-style: normal;
+    font-size: .8rem;
+    color: #b3261e;
+}
