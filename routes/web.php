@@ -3,7 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\BookingController;
-
+use App\Http\Controllers\InquiryController;
+use App\Http\Controllers\AdminInquiryController;
 // Web Routes
 Route::get('/', function () {
     return view('home');
@@ -80,4 +81,16 @@ Route::prefix('api')->group(function () {
         Route::put('/bookings/{id}', [BookingController::class, 'update']);
         Route::delete('/bookings/{id}', [BookingController::class, 'destroy']);
     });
+});
+
+Route::post('/api/inquiries', [InquiryController::class, 'store'])->middleware('throttle:5,1');
+
+Route::prefix('api/admin')->group(function () {
+    Route::get('/inquiries/summary', [AdminInquiryController::class, 'summary']); // keep above {id}
+    Route::get('/inquiries', [AdminInquiryController::class, 'index']);
+    Route::get('/inquiries/{id}', [AdminInquiryController::class, 'show']);
+    Route::patch('/inquiries/{id}/status', [AdminInquiryController::class, 'updateStatus']);
+    Route::patch('/inquiries/{id}/priority', [AdminInquiryController::class, 'updatePriority']);
+    Route::post('/inquiries/{id}/notes', [AdminInquiryController::class, 'addNote']);
+    Route::delete('/inquiries/{id}', [AdminInquiryController::class, 'destroy']);
 });
