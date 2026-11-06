@@ -1,13 +1,26 @@
 (function () {
     const TOKEN_KEY = 'admin_token';
     const API_URL = '/api/admin/login';
-    const DASHBOARD_URL = '/admin/dashboard';
+    const DASHBOARD_URL = '/admin/dashboard';   
+    
+    // Testing bypass: off for everyone by default.
+    // To turn it on in YOUR browser only, run this in the console (F12):
+    //   localStorage.setItem('dev_mode', '1')
+    let DEV_MODE = false;
+    try { DEV_MODE = localStorage.getItem('dev_mode') === '1'; } catch (e) {}
+
+    function nextUrl() {
+        const next = new URLSearchParams(window.location.search).get('next');
+        const insideAdmin = next && /^\/admin(\/|\?|$)/.test(next) && next.indexOf('//') === -1;
+        const isLoginPage = next && /^\/admin\/(login|forgot-password)/.test(next);
+
+        return insideAdmin && !isLoginPage ? next : DASHBOARD_URL;
+    }
 
     const form = document.getElementById('login-form');
     const errorBox = document.getElementById('error-message');
     const button = document.getElementById('login-button');
 
-    // Stop if the required HTML elements do not exist.
     if (!form || !errorBox || !button) {
         return;
     }
@@ -17,32 +30,27 @@
     const emailError = document.getElementById('email-error');
     const passwordError = document.getElementById('password-error');
 
-    // Redirect if an admin token is already stored.
     try {
         if (
             localStorage.getItem(TOKEN_KEY) ||
             sessionStorage.getItem(TOKEN_KEY)
         ) {
-            window.location.href = DASHBOARD_URL;
+            window.location.href = nextUrl();
             return;
         }
     } catch (e) {
-        // Continue if browser storage is unavailable.
     }
 
-    // Display a general error message.
     function showError(message) {
         errorBox.textContent = message;
         errorBox.hidden = false;
     }
 
-    // Hide the general error message.
     function clearError() {
         errorBox.textContent = '';
         errorBox.hidden = true;
     }
 
-    // Validate the email field.
     function validateEmail() {
         const value = email.value.trim();
 
@@ -63,7 +71,6 @@
         return true;
     }
 
-    // Validate the password field.
     function validatePassword() {
         if (password.value.trim() === '') {
             passwordError.textContent = 'Please enter your password.';
@@ -76,7 +83,6 @@
         return true;
     }
 
-    // Clear or update field errors as the user types.
     email.addEventListener('input', function () {
         validateEmail();
         clearError();
@@ -87,7 +93,6 @@
         clearError();
     });
 
-    // Handle login submission.
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
 
@@ -96,7 +101,6 @@
         const emailIsValid = validateEmail();
         const passwordIsValid = validatePassword();
 
-        // Do not send the API request if the fields are invalid.
         if (!emailIsValid || !passwordIsValid) {
             if (!emailIsValid) {
                 email.focus();
@@ -108,12 +112,21 @@
 
         const emailValue = email.value.trim();
         const passwordValue = password.value;
-        const rememberCheckbox = form.querySelector(
-            'input[name="remember"]'
-        );
-        const remember = rememberCheckbox
-            ? rememberCheckbox.checked
-            : false;
+        const rememberCheckbox = form.querySelector('input[name="remember"]');
+        const remember = rememberCheckbox ? rememberCheckbox.checked : false;
+
+        if (DEV_MODE) {
+            try {
+                const devStorage = remember ? localStorage : sessionStorage;
+                devStorage.setItem(TOKEN_KEY, 'dev-token');
+            } catch (e) {
+                showError('Unable to save your login session. Please check your browser settings.');
+                return;
+            }
+
+            window.location.href = nextUrl();
+            return;
+        }
 
         button.disabled = true;
         button.textContent = 'Signing in...';
@@ -135,35 +148,23 @@
                 return {};
             });
 
-            // Handle unsuccessful login responses.
             if (!response.ok || !data.token) {
-                showError(
-                    data.message || 'Invalid email or password.'
-                );
+                showError(data.message || 'Invalid email or password.');
                 return;
             }
 
-            // Store the token according to the Remember Me choice.
             try {
-                const storage = remember
-                    ? localStorage
-                    : sessionStorage;
-
+                const storage = remember ? localStorage : sessionStorage;
                 storage.setItem(TOKEN_KEY, data.token);
             } catch (e) {
-                showError(
-                    'Unable to save your login session. Please check your browser settings.'
-                );
+                showError('Unable to save your login session. Please check your browser settings.');
                 return;
             }
 
-            // Navigate to the dashboard after successful login.
-            window.location.href = DASHBOARD_URL;
+            window.location.href = nextUrl();
 
         } catch (e) {
-            showError(
-                'Could not reach the server. Please try again.'
-            );
+            showError('Could not reach the server. Please try again.');
         } finally {
             button.disabled = false;
             button.textContent = 'Login';
