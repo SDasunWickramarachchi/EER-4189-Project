@@ -21,6 +21,11 @@
             <button v-for="q in quickQuestions" :key="q" @click="ask(q)">{{ q }}</button>
         </div>
 
+        <div class="chat-actions">
+            <a href="/booking" class="chat-action primary">Book Now</a>
+            <a href="/contact"class="chat-action">Send an inquiry</a>
+        </div>
+
         <div class="chat-input">
             <input type="text" v-model="draft" @keydown.enter="send"
                    placeholder="Type your question..." aria-label="Your message">

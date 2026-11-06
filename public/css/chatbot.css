@@ -93,3 +93,12 @@
     cursor: pointer;
 }
 .chat-input button:hover { background: var(--plum); }
+.chat-actions { display: flex; gap: .5rem; padding: 0 1rem .6rem; background: var(--bg); }
+.chat-action {
+    flex: 1; text-align: center;
+    padding: .45rem .6rem;
+    border: 1px solid var(--accent); border-radius: 999px;
+    font: 500 .78rem var(--font-body); color: var(--accent);
+}
+.chat-action.primary { background: var(--accent); color: var(--white); }
+.chat-action:hover { background: var(--plum); color: var(--white); border-color: var(--plum);}

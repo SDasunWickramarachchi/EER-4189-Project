@@ -19,7 +19,7 @@ createChatApp({
 
             replies: [
                 {
-                    keys: ["service", "offer", "what do you", "shoot"],
+                    keys: ["service", "offer", "what do you do", "shoot"],
                     text: "We photograph weddings and couples, maternity and newborn sessions, portraits and lifestyle, and events and invitations.",
                     link: { label: "See our services", href: "/services" },
                 },
@@ -37,6 +37,11 @@ createChatApp({
                     keys: ["event", "birthday", "party", "invitation"],
                     text: "We photograph birthdays, celebrations and corporate events, capturing the atmosphere and the details as they unfold.",
                     link: { label: "See our services", href: "/services" },
+                },
+                {
+                    keys: ["inquiry", "inquire", "enquiry", "question", "quote", "message"],
+                    text: "You can send us an inquiry with your date, location and the type of session, and we will reply by email.",
+                    link: { label: "Send an inquiry", href:"/contact"},
                 },
                 {
                     keys: ["price", "cost", "package", "rate", "how much", "charge"],
