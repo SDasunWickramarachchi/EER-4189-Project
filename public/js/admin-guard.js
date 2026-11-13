@@ -15,12 +15,9 @@
     }
 
     function clearToken() {
-        try {
-            localStorage.removeItem(TOKEN_KEY);
-            sessionStorage.removeItem(TOKEN_KEY);
-        } catch (e) {
+        try { localStorage.removeItem(TOKEN_KEY); } catch (e){}
+        try { sessionStorage.removeItem(TOKEN_KEY); } catch (e){}
         }
-    }
 
     function goToLogin() {
         var here = window.location.pathname + window.location.search;
@@ -90,6 +87,7 @@
             try {
                 fetch(LOGOUT_API, {
                     method: 'POST',
+                    keepalive: true,
                     headers: { 'Accept': 'application/json', 'Authorization': 'Bearer ' + token }
                 }).catch(function () {});
             } catch (e) {
