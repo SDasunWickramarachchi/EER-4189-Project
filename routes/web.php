@@ -5,6 +5,8 @@ use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\InquiryController;
 use App\Http\Controllers\AdminInquiryController;
+use App\Http\Controllers\AdminSettingsController;
+
 // Web Routes
 Route::get('/', function () {
     return view('home');
@@ -41,6 +43,10 @@ Route::get('/admin/services', function () {
 
 Route::get('/admin/booking', function () {
     return view('admin.booking');
+});
+
+Route::get('/admin/settings', function () {
+    return view('admin.settings');
 });
 
 // API Routes (MongoDB Integrated)
@@ -93,4 +99,9 @@ Route::prefix('api/admin')->group(function () {
     Route::patch('/inquiries/{id}/priority', [AdminInquiryController::class, 'updatePriority']);
     Route::post('/inquiries/{id}/notes', [AdminInquiryController::class, 'addNote']);
     Route::delete('/inquiries/{id}', [AdminInquiryController::class, 'destroy']);
+    Route::get('/settings', [AdminSettingsController::class, 'show']);
+    Route::put('/settings', [AdminSettingsController::class, 'update']);
+    Route::post('/settings/avatar', [AdminSettingsController::class, 'uploadAvatar']);
+    Route::delete('/settings/avatar', [AdminSettingsController::class, 'removeAvatar']);
 });
+
