@@ -5,6 +5,11 @@ const CONTACT = {
     email: "ashanrumaiz@gmail.com",
     place: "Negombo, Sri Lanka",
 };
+// Set to true when the server route /api/chatbot/config is exsists done by hemal.
+const USE_SERVER_ANSWERS = false;
+const CONFIG_URL = "/api/chatbot/config";
+
+
 
 createChatApp({
     data() {
@@ -81,6 +86,10 @@ createChatApp({
         };
     },
 
+    mounted() {
+        if (USE_SERVER_ANSWERS) this.loadConfig();
+    },
+
     methods: {
         toggle() { this.open = !this.open; },
 
@@ -104,8 +113,32 @@ createChatApp({
             }, 400);
         },
 
+        async loadConfig() {
+            try {
+                const response = await fetch(CONFIG_URL, { headers: { "Accept": "application/json" } });
+                if (!response.ok) return;
+
+                const result = await response.json();
+                const config = result.data || result;
+                const answers = (config.answers || []).filter(a => a.is_active !== false);
+                if (!answers.length) return;
+
+                this.replies = answers.map(a => ({
+                    question: a.question,
+                    keys: (a.keywords || []).map(k => String(k).toLowerCase()),
+                    text: a.answer,
+                    link: a.link_url ? { label: a.link_label || "Learn more", href: a.link_url } : undefined,
+                }));
+                this.quickQuestions = answers.slice(0, 3).map(a => a.question);
+            } catch (e) {
+            }
+        },
+
         findReply(text) {
-            const t = text.toLowerCase();
+            const t = text.toLowerCase().trim();
+
+            const exact = this.replies.find(r => r.question && r.question.toLowerCase() === t);
+            if (exact) return { text: exact.text, link: exact.link };
 
             if (/\b(hi|hello|hey)\b/.test(t)) return { text: this.greeting };
 
