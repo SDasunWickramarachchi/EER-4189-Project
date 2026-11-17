@@ -49,6 +49,10 @@ Route::get('/admin/settings', function () {
     return view('admin.settings');
 });
 
+Route::get('/admin/chatbot-settings', function () {
+    return view('admin.chatbot-settings');
+});
+
 // API Routes (MongoDB Integrated)
 Route::prefix('api')->group(function () {
     // Services Endpoints
